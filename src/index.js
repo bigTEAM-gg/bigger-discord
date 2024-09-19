@@ -86,8 +86,9 @@ client.on("interactionCreate", async (interaction) => {
 
   if (interaction.commandName === "rename") {
     const name = interaction.options.getString("name");
+    console.log(interaction)
     log(
-      `${interaction.author.username} (<@${interaction.author.id}>) attempted to rename <#${interaction.channelId}> with "${name}"`,
+      `${interaction.user.username} (<@${interaction.user.id}>) renamed <#${interaction.channelId}> with "${name}"`,
     );
 
     if (

@@ -162,7 +162,7 @@ client.on("messageCreate", async (message) => {
         `${message.author.displayName}'s Event`,
     });
     await thread.send(
-      `Thank you <@${message.author.id}> for posting this event! Use \`/rename\` to rename this thread :slight_smile:`,
+      `Thank you <@${message.author.id}> for posting this! Use \`/rename\` to rename this thread :slight_smile:`,
     );
     if (message.crosspostable) {
       await message.crosspost();

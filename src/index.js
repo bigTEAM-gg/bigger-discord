@@ -73,6 +73,11 @@ const log = async (message, title='Auto Moderation') => {
   });
 };
 
+const isMyThread = (channel) => (
+  [ChannelType.PublicThread, ChannelType.AnnouncementThread, ChannelType.PrivateThread].some(t => t === channel.type)
+  && channel.ownerId !== CLIENT_ID
+);
+
 client.on("ready", () => {
   console.log(`Logged in as ${client.user.tag}!`);
 });
@@ -86,15 +91,10 @@ client.on("interactionCreate", async (interaction) => {
 
   if (interaction.commandName === "rename") {
     const name = interaction.options.getString("name");
-    log(
-      `${interaction.user.username} (<@${interaction.user.id}>) renamed <#${interaction.channelId}> with "${name}"`,
-      'Thread edited'
-    );
 
-    if (
-      interaction.channel.type !== ChannelType.PublicThread ||
-      interaction.channel.ownerId !== CLIENT_ID
-    ) {
+    if (isMyThread(interaction.channel)) {
+      console.log(interaction.channel.type, ChannelType.PublicThread)
+      console.log(interaction.channel.ownerId, CLIENT_ID)
       await interaction.reply({
         content: "I can only rename threads I've made",
         ephemeral: true,
@@ -120,6 +120,11 @@ client.on("interactionCreate", async (interaction) => {
       });
       return;
     }
+
+    log(
+      `${interaction.user.username} (<@${interaction.user.id}>) renamed <#${interaction.channelId}> with "${name}"`,
+      'Thread edited'
+    );
 
     await interaction.reply({
       content: "Done!",

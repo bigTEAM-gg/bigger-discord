@@ -1,0 +1,19 @@
+{
+  "name": "bigger-discord",
+  "version": "1.0.0",
+  "main": "index.js",
+  "repository": "https://github.com/CoolDotty/bigger-discord.git",
+  "author": "Dot <hey@dotty.cool>",
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "start": "node --env-file=.env src/index.js",
+    "format": "yarn prettier . --write"
+  },
+  "dependencies": {
+    "discord.js": "^14.16.2"
+  },
+  "devDependencies": {
+    "prettier": "3.3.3"
+  }
+}

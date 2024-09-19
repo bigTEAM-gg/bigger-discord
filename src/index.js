@@ -85,6 +85,11 @@ client.on("interactionCreate", async (interaction) => {
   }
 
   if (interaction.commandName === "rename") {
+    const name = interaction.options.getString("name");
+    log(
+      `${interaction.author.username} (<@${interaction.author.id}>) attempted to rename <#${interaction.channelId}> with "${name}"`,
+    );
+
     if (
       interaction.channel.type !== ChannelType.PublicThread ||
       interaction.channel.ownerId !== CLIENT_ID
@@ -96,7 +101,6 @@ client.on("interactionCreate", async (interaction) => {
       return;
     }
 
-    const name = interaction.options.getString("name");
     if (!name) {
       await interaction.reply({
         content: "Thread name required.",

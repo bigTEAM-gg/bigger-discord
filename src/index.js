@@ -3,17 +3,17 @@ import {
   Client,
   GatewayIntentBits,
   ThreadAutoArchiveDuration,
-  SlashCommandBuilder
+  SlashCommandBuilder,
 } from "discord.js";
 import { REST, Routes } from "discord.js";
 
 const { TOKEN, CLIENT_ID } = process.env;
 
 const THREAD_ONLY_CHANNELS = [
-  '1244781263680831558', // online-events
-  '1244779968748322847', // vancovuer-events
-  '1244781299525222593', // alberta-events
-  '1246187757366411414', // cool-jobs-paid
+  "1244781263680831558", // online-events
+  "1244779968748322847", // vancovuer-events
+  "1244781299525222593", // alberta-events
+  "1246187757366411414", // cool-jobs-paid
 ];
 
 const LOG_CHANNEL = "1251326681113956484";
@@ -85,64 +85,62 @@ client.on("interactionCreate", async (interaction) => {
   }
 
   if (interaction.commandName === "rename") {
-
     if (
       interaction.channel.type !== ChannelType.PublicThread ||
       interaction.channel.ownerId !== CLIENT_ID
     ) {
       await interaction.reply({
-        content: 'I can only rename threads I\'ve made',
-        ephemeral: true
-     });
+        content: "I can only rename threads I've made",
+        ephemeral: true,
+      });
       return;
     }
 
     const name = interaction.options.getString("name");
     if (!name) {
       await interaction.reply({
-        content: 'Thread name required.',
-        ephemeral: true
-     });
+        content: "Thread name required.",
+        ephemeral: true,
+      });
       return;
     }
 
     try {
       await interaction.channel.edit({ name: name.substring(0, 100) });
-    } catch(e) {
+    } catch (e) {
       console.error(e);
       await interaction.reply({
-        content: 'Invalid thread name.',
-        ephemeral: true
-     });
-     return;
+        content: "Invalid thread name.",
+        ephemeral: true,
+      });
+      return;
     }
 
     await interaction.reply({
-      content: 'Done!',
-      ephemeral: true
-   });
+      content: "Done!",
+      ephemeral: true,
+    });
   }
-
 });
 
-const isRegularMessage = (message) =>
-  THREAD_ONLY_CHANNELS.some((id) => id === message.channelId) &&
-  !(
-    Array.from(message.attachments).length > 0 ||
-    /(\b(https?|ftp|file):\/\/[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])/gi.test(
-      message.content,
-    )
+const isThreadedChannels = (message) =>
+  THREAD_ONLY_CHANNELS.some((id) => id === message.channelId);
+
+const isMediaMessage = (message) =>
+  Array.from(message.attachments).length > 0 ||
+  /(\b(https?|ftp|file):\/\/[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])/gi.test(
+    message.content,
   );
 
 client.on("messageCreate", async (message) => {
   if (isSelf(message)) return;
-  if (isRegularMessage(message)) {
+  if (!isThreadedChannels(message)) return;
+  if (!isMediaMessage(message)) {
     log(
       `Deleted "${message.content}" from ${message.author.username} (<@${message.author.id}>) in <#${message.channelId}>`,
     );
     const notThreadWarning = await message.reply({
-      content:
-        "Please discuss events in their threads (Links and media only)",
+      content: "Please discuss events in their threads (Links and media only)",
     });
     await message.delete();
     await delay(10000);
@@ -154,13 +152,17 @@ client.on("messageCreate", async (message) => {
   try {
     const thread = await message.startThread({
       autoArchiveDuration: ThreadAutoArchiveDuration.OneWeek,
-      name: message.content?.substring(0, 100) || `${message.author.displayName}'s Event`,
+      name:
+        message.content?.substring(0, 100) ||
+        `${message.author.displayName}'s Event`,
     });
-    await thread.send(`Thank you <@${message.author.id}> for posting this event! Use \`/rename\` to rename this thread :slight_smile:`);
+    await thread.send(
+      `Thank you <@${message.author.id}> for posting this event! Use \`/rename\` to rename this thread :slight_smile:`,
+    );
     if (message.crosspostable) {
-      await message.crosspost()
+      await message.crosspost();
     }
-  } catch(e) {
+  } catch (e) {
     // idk, who cares
     console.error(e);
   }

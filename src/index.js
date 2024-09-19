@@ -86,7 +86,6 @@ client.on("interactionCreate", async (interaction) => {
 
   if (interaction.commandName === "rename") {
     const name = interaction.options.getString("name");
-    console.log(interaction)
     log(
       `${interaction.user.username} (<@${interaction.user.id}>) renamed <#${interaction.channelId}> with "${name}"`,
       'Thread edited'

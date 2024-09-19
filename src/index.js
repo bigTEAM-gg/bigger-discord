@@ -59,13 +59,13 @@ const isSelf = (message) =>
   message.author.system ||
   message.author.id === CLIENT_ID;
 
-const log = async (message) => {
+const log = async (message, title='Auto Moderation') => {
   const channel = await client.channels.fetch(LOG_CHANNEL);
   await channel.send({
     content: null,
     embeds: [
       {
-        title: "Auto Moderation",
+        title: title,
         description: message,
         color: 16773120,
       },
@@ -89,6 +89,7 @@ client.on("interactionCreate", async (interaction) => {
     console.log(interaction)
     log(
       `${interaction.user.username} (<@${interaction.user.id}>) renamed <#${interaction.channelId}> with "${name}"`,
+      'Thread edited'
     );
 
     if (

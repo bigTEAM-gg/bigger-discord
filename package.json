@@ -11,7 +11,8 @@
     "format": "yarn prettier . --write"
   },
   "dependencies": {
-    "discord.js": "^14.16.2"
+    "discord.js": "^14.16.2",
+    "ollama": "^0.5.9"
   },
   "devDependencies": {
     "prettier": "3.3.3"

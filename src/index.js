@@ -6,14 +6,17 @@ import {
   SlashCommandBuilder,
 } from "discord.js";
 import { REST, Routes } from "discord.js";
+import { generateTitle } from './llm.js';
 
 const { TOKEN, CLIENT_ID } = process.env;
 
 const THREAD_ONLY_CHANNELS = [
+  // "1286168855978442793", // Test channel
   "1244781263680831558", // online-events
   "1244779968748322847", // vancovuer-events
   "1244781299525222593", // alberta-events
   "1246187757366411414", // cool-jobs-paid
+  "1286538455274225686", // funny-ai
 ];
 
 const LOG_CHANNEL = "1251326681113956484";
@@ -60,6 +63,7 @@ const isSelf = (message) =>
   message.author.id === CLIENT_ID;
 
 const log = async (message, title='Auto Moderation') => {
+  // if (true) return; // test channel please ignore
   const channel = await client.channels.fetch(LOG_CHANNEL);
   await channel.send({
     content: null,
@@ -159,22 +163,17 @@ client.on("messageCreate", async (message) => {
   }
   if (message.channel.type === ChannelType.PublicThread) return;
 
-  try {
-    const thread = await message.startThread({
-      autoArchiveDuration: ThreadAutoArchiveDuration.OneWeek,
-      name:
-        message.content?.substring(0, 100) ||
-        `${message.author.displayName}'s Event`,
-    });
-    await thread.send(
-      `Thank you <@${message.author.id}> for posting this! Use \`/rename\` to rename this thread :slight_smile:`,
-    );
-    if (message.crosspostable) {
-      await message.crosspost();
-    }
-  } catch (e) {
-    // idk, who cares
-    console.error(e);
+  let eventName = `${message.author.displayName}'s Cool Event`;
+  eventName = await generateTitle(message.content || eventName);
+  const thread = await message.startThread({
+    autoArchiveDuration: ThreadAutoArchiveDuration.OneWeek,
+    name: eventName,
+  });
+  await thread.send(
+    `Thank you <@${message.author.id}> for posting this! Use \`/rename\` to rename this thread :slight_smile:`,
+  );
+  if (message.crosspostable) {
+    await message.crosspost();
   }
   return;
 });

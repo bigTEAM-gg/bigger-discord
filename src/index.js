@@ -17,6 +17,8 @@ const THREAD_ONLY_CHANNELS = [
   "1244781299525222593", // alberta-events
   "1246187757366411414", // cool-jobs-paid
   "1286538455274225686", // funny-ai
+  "1288215976063668435", // Inktober
+  "1293738751360630814", // commisions-open
 ];
 
 const LOG_CHANNEL = "1251326681113956484";
@@ -79,7 +81,7 @@ const log = async (message, title='Auto Moderation') => {
 
 const isMyThread = (channel) => (
   [ChannelType.PublicThread, ChannelType.AnnouncementThread, ChannelType.PrivateThread].some(t => t === channel.type)
-  && channel.ownerId !== CLIENT_ID
+  && channel.ownerId === CLIENT_ID
 );
 
 client.on("ready", () => {
@@ -96,9 +98,7 @@ client.on("interactionCreate", async (interaction) => {
   if (interaction.commandName === "rename") {
     const name = interaction.options.getString("name");
 
-    if (isMyThread(interaction.channel)) {
-      console.log(interaction.channel.type, ChannelType.PublicThread)
-      console.log(interaction.channel.ownerId, CLIENT_ID)
+    if (!isMyThread(interaction.channel)) {
       await interaction.reply({
         content: "I can only rename threads I've made",
         ephemeral: true,

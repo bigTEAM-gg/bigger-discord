@@ -10,6 +10,11 @@ import { generateTitle } from './llm.js';
 
 const { TOKEN, CLIENT_ID } = process.env;
 
+const YOU_ONLY_POST_ONCE = [
+  "1373127153884987522"
+  // "1141394795592421396" // Introductions
+]
+
 const THREAD_ONLY_CHANNELS = [
   // "1286168855978442793", // Test channel
   "1244781263680831558", // online-events
@@ -19,7 +24,6 @@ const THREAD_ONLY_CHANNELS = [
   "1286538455274225686", // funny-ai
   "1288215976063668435", // Inktober
   "1293738751360630814", // commisions-open
-  "1141394795592421396", // Introductions
 ];
 
 const LOG_CHANNEL = "1251326681113956484";
@@ -65,7 +69,7 @@ const isSelf = (message) =>
   message.author.system ||
   message.author.id === CLIENT_ID;
 
-const log = async (message, title='Auto Moderation') => {
+const log = async (message, title = 'Auto Moderation') => {
   // if (true) return; // test channel please ignore
   const channel = await client.channels.fetch(LOG_CHANNEL);
   await channel.send({
@@ -138,6 +142,10 @@ client.on("interactionCreate", async (interaction) => {
   }
 });
 
+const isIntroduction = (message) => 
+  YOU_ONLY_POST_ONCE.some((id) => id === message.channelId);
+
+
 const isThreadedChannels = (message) =>
   THREAD_ONLY_CHANNELS.some((id) => id === message.channelId);
 
@@ -147,36 +155,73 @@ const isMediaMessage = (message) =>
     message.content,
   );
 
+const userHasThreadedBefore = async (message) => {
+  return false;
+  // const activeThreads = await message.channel.threads.fetchActive();
+  // const archivedThreads = await message.channel.threads.fetchArchived();
+
+  // return [...activeThreads.threads.values(), ...archivedThreads.threads.values()].some(thread => {
+  //   const starterMessage = thread.fetchStarterMessage();
+  //   return starterMessage.author.id === message.author.id;
+  // });
+}
+
 client.on("messageCreate", async (message) => {
   if (isSelf(message)) return;
-  if (!isThreadedChannels(message)) return;
-  if (!isMediaMessage(message)) {
-    log(
-      `Deleted "${message.content}" from ${message.author.username} (<@${message.author.id}>) in <#${message.channelId}>`,
-    );
-    const notThreadWarning = await message.reply({
-      content: "Please discuss events in their threads (Links and media only)",
+  if (isThreadedChannels(message)) {
+    if (!isMediaMessage(message)) {
+      log(
+        `Deleted "${message.content}" from ${message.author.username} (<@${message.author.id}>) in <#${message.channelId}>`,
+      );
+      const notThreadWarning = await message.reply({
+        content: "Please discuss events in their threads (Links and media only)",
+      });
+      await delay(10000);
+      await message.delete();
+      await notThreadWarning.delete();
+      return;
+    }
+    if (message.channel.type === ChannelType.PublicThread) return;
+
+    let eventName = `${message.author.displayName}'s Cool Event`;
+    eventName = await generateTitle(message.content || eventName);
+    const thread = await message.startThread({
+      autoArchiveDuration: ThreadAutoArchiveDuration.OneWeek,
+      name: eventName,
     });
-    await message.delete();
-    await delay(10000);
-    await notThreadWarning.delete();
+    await thread.send(
+      `Thank you <@${message.author.id}> for posting this! Use \`/rename\` to rename this thread :slight_smile:`,
+    );
+    if (message.crosspostable) {
+      await message.crosspost();
+    }
     return;
   }
-  if (message.channel.type === ChannelType.PublicThread) return;
+  if (isIntroduction(message)) {
+    if (message.channel.type === ChannelType.PublicThread) return;
 
-  let eventName = `${message.author.displayName}'s Cool Event`;
-  eventName = await generateTitle(message.content || eventName);
-  const thread = await message.startThread({
-    autoArchiveDuration: ThreadAutoArchiveDuration.OneWeek,
-    name: eventName,
-  });
-  await thread.send(
-    `Thank you <@${message.author.id}> for posting this! Use \`/rename\` to rename this thread :slight_smile:`,
-  );
-  if (message.crosspostable) {
-    await message.crosspost();
+    if (await userHasThreadedBefore(message)) {
+      log(
+        `Deleted "${message.content}" from ${message.author.username} (<@${message.author.id}>) in <#${message.channelId}>`,
+      );
+      const userThreadedBeforeWarning = await message.reply({
+        content: "You have intro'd already! (Reply in someone's introduction thread)",
+      });
+      await delay(10000);
+      await message.delete();
+      await userThreadedBeforeWarning.delete();
+    }
+
+    let threadName = `${message.author.displayName}'s Introduction`;
+    const thread = await message.startThread({
+      autoArchiveDuration: ThreadAutoArchiveDuration.OneWeek,
+      name: threadName,
+    });
+    await thread.send(
+      `Welcome <@${message.author.id}> to the server! A moderator will verify you shortly :slight_smile:`
+    );
+    return;
   }
-  return;
 });
 
 client.login(TOKEN);

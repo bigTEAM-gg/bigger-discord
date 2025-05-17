@@ -11,8 +11,8 @@ import { generateTitle } from './llm.js';
 const { TOKEN, CLIENT_ID } = process.env;
 
 const YOU_ONLY_POST_ONCE = [
-  "1373127153884987522"
-  // "1141394795592421396" // Introductions
+  // "1373127153884987522" // testing
+  "1141394795592421396" // Introductions
 ]
 
 const THREAD_ONLY_CHANNELS = [

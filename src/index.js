@@ -19,6 +19,7 @@ const THREAD_ONLY_CHANNELS = [
   "1286538455274225686", // funny-ai
   "1288215976063668435", // Inktober
   "1293738751360630814", // commisions-open
+  "1141394795592421396", // Introductions
 ];
 
 const LOG_CHANNEL = "1251326681113956484";
